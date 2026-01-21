@@ -1,2 +1,1 @@
 # smart-cane
-# smart-cane
