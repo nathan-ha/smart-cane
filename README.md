@@ -1,25 +1,2 @@
-# smart-cane
-
-## CV Instructions
-Requirements:
-- Python3+
-- Camera Plugged in
-
-Upon first install, run:
-```
-pip install ultralytics opencv-python
-```
-
-If you get an error, run
-```
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-To run object detection, do:
-```
-./object-recognition.py
-```
-
-## Ultrasonic Sensor + Vibrating Motor Instructions
-N/A
+# Project Overview
+This repository is the codebase for the smart cane, a white cane with embedded sensors and a camera to provide auditory and haptic feedback to the visually impaired.
