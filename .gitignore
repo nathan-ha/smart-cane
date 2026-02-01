@@ -217,3 +217,5 @@ __marimo__/
 
 # Model Files
 *.pt
+
+*.detected_obj
