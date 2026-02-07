@@ -1,22 +1,34 @@
-from machine import Pin, PWM
-from hcsr04 import HCSR04
+from sensors import *
+from util import *
+from motors import *
 import time
 
-sensor01 = HCSR04(trigger_pin=0, echo_pin=1, echo_timeout_us=30000)
-sensor02 = HCSR04(trigger_pin=2, echo_pin=3, echo_timeout_us=30000)
-sensor03 = HCSR04(trigger_pin=4, echo_pin=5, echo_timeout_us=30000)
-
-motor = PWM(Pin(6), freq=50) 
-motor.duty_u16(0)
+SLEEP_S = 0.3
+DEBUG = False
 
 while True:
-    try:
-        distance_01 = sensor01.distance_mm()
-        distance_02 = sensor02.distance_mm()
-        distance_03 = sensor03.distance_mm()
-        print(f'Distance_01: {distance_01}')
-        print(f'Distance_02: {distance_02}')
-        print(f'Distance_03: {distance_03}')
-    except OSError as e:
-        print('Error:', e)
-    time.sleep(0.3)
+    # get distance
+    left_dist = DIST_SENSORS["left"].distance_mm()
+    right_dist = DIST_SENSORS["right"].distance_mm()
+    middle_dist = DIST_SENSORS["middle"].distance_mm()
+    
+    # map distances to pwm values
+    left_dist_scaled = map_range(left_dist, DIST_MIN_MM, DIST_MAX_MM, PWM_MIN, PWM_MAX)
+    right_dist_scaled = map_range(right_dist, DIST_MIN_MM, DIST_MAX_MM, PWM_MIN, PWM_MAX)
+    middle_dist_scaled = map_range(middle_dist, DIST_MIN_MM, DIST_MAX_MM, PWM_MIN, PWM_MAX)
+        
+    # update vibration speed
+    MOTORS["left"].duty_u16(left_dist_scaled)
+    MOTORS["right"].duty_u16(right_dist_scaled)
+    MOTORS["middle"].duty_u16(middle_dist_scaled)
+
+    if DEBUG:
+        print(f"left_dist {left_dist}")
+        print(f"right_dist {right_dist}")
+        print(f"middle_dist {middle_dist}")
+        print(f"left_dist_scaled {left_dist_scaled}")
+        print(f"right_dist_scaled {right_dist_scaled}")
+        print(f"middle_dist_scaled {middle_dist_scaled}")
+
+    time.sleep(SLEEP_S)
+    
