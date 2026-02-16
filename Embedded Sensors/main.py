@@ -22,8 +22,8 @@ def read_dist(dir):
     prev_dist[dir] = current
     return current
 
-# scales from distance to pwm
-def scale_distance(dist):
+# chooses a PWM value based on distance
+def dist_to_pwm(dist):
     if dist <= PWM_MIN:
         return PWM_MIN
     scaled = map_range(dist, DIST_MIN_MM, DIST_MAX_MM, PWM_MIN, PWM_MAX)
@@ -33,12 +33,12 @@ while True:
 
     for dir in ["left", "right", "middle"]:
         dist = read_dist(dir)
-        scaled = scale_distance(dist)
-        MOTORS[dir].duty_u16(scaled)     
+        pwm = dist_to_pwm(dist)
+        MOTORS[dir].duty_u16(pwm)     
 
         if DEBUG:
             print(f"{dir}_dist: {dist}")
-            print(f"{dir}_dist_scaled: {scaled}\n")
+            print(f"{dir}_pwm: {pwm}\n")
 
     time.sleep(SLEEP_S)
     
