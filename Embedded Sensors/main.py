@@ -13,13 +13,13 @@ prev_dist = {
 }
 
 # reads sensor distance
-def read_dist(name):
-    current = DIST_SENSORS[name].distance_mm()
-    previous = prev_dist[name]
+def read_dist(dir):
+    current = DIST_SENSORS[dir].distance_mm()
+    previous = prev_dist[dir]
     # filters out large spikes in distance readings
     if abs(current - previous) > DIST_MAX_MM:
         return previous
-    prev_dist[name] = current
+    prev_dist[dir] = current
     return current
 
 # scales from distance to pwm
