@@ -6,46 +6,39 @@ import time
 SLEEP_S = 0.3
 DEBUG = True
 
-prev_left = prev_right = prev_middle = PWM_MIN
+prev_dist = {
+    "left": PWM_MIN,
+    "right": PWM_MIN,
+    "middle": PWM_MIN,
+}
+
+# reads sensor distance
+def read_dist(name):
+    current = DIST_SENSORS[name].distance_mm()
+    previous = prev_dist[name]
+    # filters out large spikes in distance readings
+    if abs(current - previous) > DIST_MAX_MM:
+        return previous
+    prev_dist[name] = current
+    return current
+
+# scales from distance to pwm
+def scale_distance(dist):
+    if dist <= PWM_MIN:
+        return PWM_MIN
+    scaled = map_range(dist, DIST_MIN_MM, DIST_MAX_MM, PWM_MIN, PWM_MAX)
+    return PWM_MAX - scaled
+
 while True:
-    # get distance
-    left_dist = DIST_SENSORS["left"].distance_mm()
-    right_dist = DIST_SENSORS["right"].distance_mm()
-    middle_dist = DIST_SENSORS["middle"].distance_mm()
-    
-    # scale distances
-    if abs(left_dist - prev_left) > DIST_MAX_MM:
-        left_dist= prev_left
-    else:
-        prev_left = left_dist
-    
-    if abs(right_dist - prev_right) > DIST_MAX_MM:
-        right_dist= prev_right
-    else:
-        prev_right = right_dist
-    
-    if abs(middle_dist - prev_middle) > DIST_MAX_MM:
-        middle_dist= prev_middle
-    else:
-        prev_middle = middle_dist
 
-    right_dist_scaled = PWM_MAX - map_range(right_dist, DIST_MIN_MM, DIST_MAX_MM, PWM_MIN, PWM_MAX) if right_dist > PWM_MIN else PWM_MIN
-    left_dist_scaled = PWM_MAX - map_range(left_dist, DIST_MIN_MM, DIST_MAX_MM, PWM_MIN, PWM_MAX) if left_dist > PWM_MIN else PWM_MIN
-    middle_dist_scaled = PWM_MAX - map_range(middle_dist, DIST_MIN_MM, DIST_MAX_MM, PWM_MIN, PWM_MAX) if middle_dist > PWM_MIN else PWM_MIN
-    
-    # update vibration speed
-    MOTORS["left"].duty_u16(left_dist_scaled)
-    MOTORS["right"].duty_u16(right_dist_scaled)
-    MOTORS["middle"].duty_u16(middle_dist_scaled)
-     
+    for dir in ["left", "right", "middle"]:
+        dist = read_dist(dir)
+        scaled = scale_distance(dist)
+        MOTORS[dir].duty_u16(scaled)     
 
-    if DEBUG:
-        print(f"left_dist {left_dist}")
-        #print(f"right_dist {right_dist}")
-        #print(f"middle_dist {middle_dist}")
-        print(f"left_dist_scaled {left_dist_scaled}")
-        #print(f"right_dist_scaled {right_dist_scaled}")
-        #print(f"middle_dist_scaled {middle_dist_scaled}")
+        if DEBUG:
+            print(f"{dir}_dist: {dist}")
+            print(f"{dir}_dist_scaled: {scaled}\n")
 
     time.sleep(SLEEP_S)
     
