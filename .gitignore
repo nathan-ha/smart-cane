@@ -219,3 +219,6 @@ __marimo__/
 *.pt
 
 *.detected_obj
+
+# Mac thingy
+.DS_Store
