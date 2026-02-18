@@ -1,22 +1,44 @@
-from machine import Pin, PWM
-from hcsr04 import HCSR04
+from sensors import *
+from util import *
+from motors import *
 import time
 
-sensor01 = HCSR04(trigger_pin=0, echo_pin=1, echo_timeout_us=30000)
-sensor02 = HCSR04(trigger_pin=2, echo_pin=3, echo_timeout_us=30000)
-sensor03 = HCSR04(trigger_pin=4, echo_pin=5, echo_timeout_us=30000)
+SLEEP_S = 0.3
+DEBUG = True
 
-motor = PWM(Pin(6), freq=50) 
-motor.duty_u16(0)
+prev_dist = {
+    "left": PWM_MIN,
+    "right": PWM_MIN,
+    "middle": PWM_MIN,
+}
+
+# reads sensor distance
+def read_dist(dir):
+    current = DIST_SENSORS[dir].distance_mm()
+    previous = prev_dist[dir]
+    # filters out large spikes in distance readings
+    if abs(current - previous) > DIST_MAX_MM:
+        return previous
+    prev_dist[dir] = current
+    return current
+
+# scales from distance to pwm
+def scale_distance(dist):
+    if dist <= PWM_MIN:
+        return PWM_MIN
+    scaled = map_range(dist, DIST_MIN_MM, DIST_MAX_MM, PWM_MIN, PWM_MAX)
+    return PWM_MAX - scaled
 
 while True:
-    try:
-        distance_01 = sensor01.distance_mm()
-        distance_02 = sensor02.distance_mm()
-        distance_03 = sensor03.distance_mm()
-        print(f'Distance_01: {distance_01}')
-        print(f'Distance_02: {distance_02}')
-        print(f'Distance_03: {distance_03}')
-    except OSError as e:
-        print('Error:', e)
-    time.sleep(0.3)
+
+    for dir in ["left", "right", "middle"]:
+        dist = read_dist(dir)
+        scaled = scale_distance(dist)
+        MOTORS[dir].duty_u16(scaled)     
+
+        if DEBUG:
+            print(f"{dir}_dist: {dist}")
+            print(f"{dir}_dist_scaled: {scaled}\n")
+
+    time.sleep(SLEEP_S)
+    

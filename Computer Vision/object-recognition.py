@@ -1,13 +1,12 @@
 # pip install ultralytics opencv-python
 
 from ultralytics import YOLO
+from tts import *
 import cv2
-import time
 
-# ===== CONFIG =====
 SHOW_WINDOW = True
 OUTPUT_FILE = ".detected_obj"
-# ==================
+tts = TTS()
 
 model = YOLO("yolo26n.pt")
 
@@ -45,12 +44,9 @@ while True:
                 class_name = model.names[cls_id]
                 largest_obj = (class_name, float(area))
 
-    # write biggest detected object to file
+    # speak largest object
     if largest_obj:
-        with open(OUTPUT_FILE, "w") as f:
-            f.write(f"Object: {largest_obj[0]}\n")
-            f.write(f"Area: {largest_obj[1]:.2f}\n")
-            f.write(f"Timestamp: {time.time()}\n")
+        tts.alert_object(largest_obj[0])
 
     # only show window if flag is set
     if SHOW_WINDOW:
