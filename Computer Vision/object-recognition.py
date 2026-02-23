@@ -1,29 +1,28 @@
-# pip install ultralytics opencv-python
-
 from ultralytics import YOLO
-from tts import *
+from picamera2 import Picamera2
 import cv2
+import pyttsx3
 
-SHOW_WINDOW = True
-OUTPUT_FILE = ".detected_obj"
-tts = TTS()
+SHOW_WINDOW = False
+tts = pyttsx3.init()
 
 model = YOLO("yolo26n.pt")
 
 # open camera (0 = default camera)
-cap = cv2.VideoCapture(0)
+picam2 = Picamera2()
 
-if not cap.isOpened():
-    print("Camera not detected")
-    input("Press enter to continue")
-    raise RuntimeError()
+config = picam2.create_preview_configuration(main={"format": "RGB888"})
+
+picam2.configure(config)
+
+picam2.start()
 
 print(f"SHOW_WINDOW is set to {SHOW_WINDOW}")
-print(f"Output written to {OUTPUT_FILE}")
 
 while True:
-    ret, frame = cap.read()
-    if not ret:
+    frame = picam2.capture_array()
+
+    if frame is None:
         break
 
     results = model(frame, verbose=False)
@@ -46,7 +45,9 @@ while True:
 
     # speak largest object
     if largest_obj:
-        tts.alert_object(largest_obj[0])
+        tts.say(largest_obj[0])
+        tts.runAndWait()
+        print(f"DEBUG {largest_obj[0]}")
 
     # only show window if flag is set
     if SHOW_WINDOW:
@@ -56,5 +57,5 @@ while True:
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-cap.release()
+picam2.stop()
 cv2.destroyAllWindows()
