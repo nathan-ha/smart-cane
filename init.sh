@@ -2,7 +2,7 @@
 
 echo "Setting up environment and installing packages..."
 
-python3 -m venv --system-site-packages test_venv
+python3 -m venv --system-site-packages venv
 
 source test_venv/bin/activate
 
