@@ -1,6 +1,8 @@
 from sensors import *
 from util import *
 from motors import *
+from button import *
+from threading import Thread
 import time
 
 SLEEP_S = 0.3
@@ -29,11 +31,15 @@ def scale_distance(dist):
     scaled = map_range(dist, DIST_MIN_MM, DIST_MAX_MM, PWM_MIN, PWM_MAX)
     return PWM_MAX - scaled
 
+t = Thread(target=button_thread, args=(), daemon=True)
+t.start() 
+
 while True:
 
     for dir in ["left", "right", "middle"]:
         dist = read_dist(dir)
         scaled = scale_distance(dist)
+        scaled = scaled // div_scale
         MOTORS[dir].duty_u16(scaled)     
 
         if DEBUG:
