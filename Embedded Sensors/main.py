@@ -39,7 +39,7 @@ while True:
     for dir in ["left", "right", "middle"]:
         dist = read_dist(dir)
         scaled = scale_distance(dist)
-        scaled = scaled // div_scale
+        scaled = (scaled // div_scale) if (div_scale > 0) else 0
         MOTORS[dir].duty_u16(scaled)     
 
         if DEBUG:
