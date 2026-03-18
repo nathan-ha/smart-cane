@@ -8,16 +8,11 @@ Requirements:
 
 Upon first install, run:
 ```
-pip install ultralytics opencv-python
+sudo ./init
 ```
+Ensure you're running the init.sh script as a sudo user.
 
-If you get an error, run
+Once you run the init.sh script, run the start.sh script to run object detection, do:
 ```
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-To run object detection, do:
-```
-./object-recognition.py
+./start.sh
 ```
